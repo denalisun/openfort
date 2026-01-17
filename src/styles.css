@@ -1,0 +1,33 @@
+* {
+    font-family: 'JetBrains Mono';
+    color: #fff;
+}
+
+body {
+    background-color: #291739;
+}
+
+input {
+    color: black;
+}
+
+button {
+    border: 2px solid #fff;
+    padding: 5px;
+    padding-left: 16px;
+    padding-right: 16px;
+    border-radius: 12px;
+    background-color: #291739;
+    transition: 0.05s;
+}
+
+button:hover {
+    background-color: #ccc;
+    color: black;
+}
+
+#launch-buttons {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+}
