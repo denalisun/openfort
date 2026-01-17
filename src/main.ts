@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 
 let launchButton: HTMLButtonElement;
 let launchEditorButton: HTMLButtonElement;
+let launchServerButton: HTMLButtonElement;
 let fortnitePathInput: HTMLInputElement;
 
 let usernameBox: HTMLInputElement;
@@ -16,7 +17,7 @@ async function validate_install(): Promise<boolean> {
 }
 
 async function launch_game(path: string, username: string, is_server: boolean) {
-  await invoke("launch_install", { path: path, username: username, is_server: is_server });
+  await invoke("launch_install", { path: path, username: username, isServer: is_server });
 }
 
 async function launch_editor(path: string) {
@@ -25,6 +26,7 @@ async function launch_editor(path: string) {
 
 window.addEventListener("DOMContentLoaded", () => {
   launchButton = document.querySelector("#launch-button") as HTMLButtonElement;
+  launchServerButton = document.querySelector("#launch-server-button") as HTMLButtonElement;
   launchEditorButton = document.querySelector("#launch-editor-button") as HTMLButtonElement;
   fortnitePathInput = document.querySelector("#fortnite-path-input") as HTMLInputElement;
 
@@ -33,7 +35,7 @@ window.addEventListener("DOMContentLoaded", () => {
   launchButton.addEventListener("click", () => {
     validate_install().then((validated) => {
       if (validated) {
-        let username: string = usernameBox.value != "" ? "UnknownLooper" : usernameBox.value;
+        let username: string = usernameBox.value;
         launch_game(fortnitePathInput.value, username, false);
       } else {
         console.log("Could not find Fortnite path!");
@@ -47,6 +49,16 @@ window.addEventListener("DOMContentLoaded", () => {
         launch_editor(fortnitePathInput.value);
       } else {
         console.log("Could not validate UEFN!");
+      }
+    });
+  });
+
+  launchServerButton.addEventListener("click", () => {
+    validate_install().then((validated) => {
+      if (validated) {
+        launch_game(fortnitePathInput.value, "serverhost", true);
+      } else {
+        console.log("Could not validate Fortnite path!");
       }
     });
   });
