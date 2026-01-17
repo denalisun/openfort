@@ -112,7 +112,7 @@ fn launch_editor(path: String) {
 fn launch_install(path: String, username: String, is_server: bool) {
     std::thread::spawn(move || {
         let args = format!("-epicapp=Fortnite -epicenv=Prod -epiclocale=en-us -epicportal -skippatchcheck -NOSSLPINNING -nobe -fromfl=eac -fltoken=3db3ba5dcbd2e16703f3978d -caldera=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50X2lkIjoiYmU5ZGE1YzJmYmVhNDQwN2IyZjQwZWJhYWQ4NTlhZDQiLCJnZW5lcmF0ZWQiOjE2Mzg3MTcyNzgsImNhbGRlcmFHdWlkIjoiMzgxMGI4NjMtMmE2NS00NDU3LTliNTgtNGRhYjNiNDgyYTg2IiwiYWNQcm92aWRlciI6IkVhc3lBbnRpQ2hlYXQiLCJub3RlcyI6IiIsImZhbGxiYWNrIjpmYWxzZX0.VAWQB67RTxhiWOxx7DBjnzDnXyyEnX7OljJm-j2d88G_WgwQ9wrE6lwMEHZHjBd1ISJdUO1UVUqkfLdU5nofBQ -AUTH_LOGIN={}@. -AUTH_PASSWORD=somethingmoreappropriate -AUTH_TYPE=epic", if username != "" { username } else { "UnknownLooper".to_string() });
-        let launch_args: Vec<&str> = args.split_whitespace().collect();
+        let mut launch_args: Vec<&str> = args.split_whitespace().collect();
 
         let fortnite_binaries = Path::new(path.as_str()).join("FortniteGame\\Binaries\\Win64");
         let fortnite_launcher_path = fortnite_binaries.clone().as_path().join("FortniteLauncher.exe");
@@ -142,6 +142,8 @@ fn launch_install(path: String, username: String, is_server: bool) {
                     }
                 }
             }
+
+            launch_args.push("-nullrhi");
         }
 
         let creation_flags = (DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP).0;
