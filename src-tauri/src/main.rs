@@ -109,7 +109,7 @@ fn launch_editor(path: String) {
 }
 
 #[tauri::command]
-fn launch_install(path: String, username: String) {
+fn launch_install(path: String, username: String, is_server: bool) {
     std::thread::spawn(move || {
         let args = format!("-epicapp=Fortnite -epicenv=Prod -epiclocale=en-us -epicportal -skippatchcheck -NOSSLPINNING -nobe -fromfl=eac -fltoken=3db3ba5dcbd2e16703f3978d -caldera=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50X2lkIjoiYmU5ZGE1YzJmYmVhNDQwN2IyZjQwZWJhYWQ4NTlhZDQiLCJnZW5lcmF0ZWQiOjE2Mzg3MTcyNzgsImNhbGRlcmFHdWlkIjoiMzgxMGI4NjMtMmE2NS00NDU3LTliNTgtNGRhYjNiNDgyYTg2IiwiYWNQcm92aWRlciI6IkVhc3lBbnRpQ2hlYXQiLCJub3RlcyI6IiIsImZhbGxiYWNrIjpmYWxzZX0.VAWQB67RTxhiWOxx7DBjnzDnXyyEnX7OljJm-j2d88G_WgwQ9wrE6lwMEHZHjBd1ISJdUO1UVUqkfLdU5nofBQ -AUTH_LOGIN={}@. -AUTH_PASSWORD=ilovejosephstalin -AUTH_TYPE=epic", username);
         let launch_args: Vec<&str> = args.split_whitespace().collect();
@@ -162,6 +162,37 @@ fn launch_install(path: String, username: String) {
             }
         };
 
+        if is_server {
+            let server_dll = appdata_folder.join("server.dll");
+            match inject_dll(fortnite_process.id(), server_dll.to_str().unwrap()) {
+                Ok(_) => {
+                    println!("Successfully injected server DLL!");
+                },
+                Err(e) => {
+                    let _ = fortnite_process.kill();
+                    let _ = eac_process.kill();
+                    let _ = launcher_process.kill();
+
+                    println!("Err while injecting server: {}", e.to_string());
+                    return;
+                }
+            }
+        } else {
+            let client_dll = appdata_folder.join("client.dll");
+            match inject_dll(fortnite_process.id(), client_dll.to_str().unwrap()) {
+                Ok(_) => {
+                    println!("Successfully injected client DLL!");
+                },
+                Err(e) => {
+                    let _ = fortnite_process.kill();
+                    let _ = eac_process.kill();
+                    let _ = launcher_process.kill();
+
+                    println!("Err while injecting client: {}", e.to_string());
+                    return;
+                }
+            }
+        }
 
         let _ = fortnite_process.wait();
 
@@ -176,6 +207,9 @@ fn main() {
     if !appdata_folder.is_dir() {
         let _ = std::fs::create_dir(appdata_folder);
     }
+
+    // TODO: Check for args
+    // example: --username=EFortRarity --path="C:\\OpenFortBuilds
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![

@@ -15,8 +15,8 @@ async function validate_install(): Promise<boolean> {
   return false;
 }
 
-async function launch_game(path: string, username: string) {
-  await invoke("launch_install", { path: path, username: username });
+async function launch_game(path: string, username: string, is_server: boolean) {
+  await invoke("launch_install", { path: path, username: username, is_server: is_server });
 }
 
 async function launch_editor(path: string) {
@@ -34,7 +34,7 @@ window.addEventListener("DOMContentLoaded", () => {
     validate_install().then((validated) => {
       if (validated) {
         let username: string = usernameBox.value != "" ? "UnknownLooper" : usernameBox.value;
-        launch_game(fortnitePathInput.value, username);
+        launch_game(fortnitePathInput.value, username, false);
       } else {
         console.log("Could not find Fortnite path!");
       }
