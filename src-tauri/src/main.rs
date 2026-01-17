@@ -119,6 +119,31 @@ fn launch_install(path: String, username: String, is_server: bool) {
         let fortnite_eac_path = fortnite_binaries.clone().as_path().join("FortniteClient-Win64-Shipping_EAC.exe");
         let fortnite_client_path = fortnite_binaries.clone().as_path().join("FortniteClient-Win64-Shipping.exe");
 
+        if is_server {
+            // Im just gonna assume that you wanna run headless when running a server lowk
+            // Ill add a toggle for it later but im not Auties00 so maybe not
+            let fortnite_client_patched_path = fortnite_binaries.clone().as_path().join("OpenFort-Server.exe");
+            if !fortnite_client_patched_path.is_file() {
+                match std::fs::copy(&fortnite_client_path, &fortnite_client_patched_path) {
+                    Ok(_) => {
+                        match patch_for_server(&fortnite_client_patched_path) {
+                            Ok(_) => {
+                                println!("Successfully patched server!");
+                            },
+                            Err(e) => {
+                                println!("Err while patching Fortnite client: {}", e);
+                                return;
+                            }
+                        }
+                    },
+                    Err(e) => {
+                        println!("Err while patching Fortnite client: {}", e);
+                        return;
+                    }
+                }
+            }
+        }
+
         let creation_flags = (DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP).0;
 
         let mut launcher_process: Child = Command::new(fortnite_launcher_path)

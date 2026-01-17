@@ -143,13 +143,7 @@ pub fn patch_uefn(path: PathBuf) -> Result<(), String> {
 
     // "Cannot modify cooked assets" patch
     // 162051E3 : Change 32 C0 to 90 90
-    match file.seek(SeekFrom::Start(0x162051E3)) {
-        Ok(_) => {},
-        Err(e) => {
-            return Err(e.to_string());
-        }
-    }
-    match file.write_all(&[0x90, 0x90]) {
+    match apply_patch(&mut file, 0x162051E3, &[0x90, 0x90]) {
         Ok(_) => {},
         Err(e) => {
             return Err(e.to_string());
@@ -158,13 +152,7 @@ pub fn patch_uefn(path: PathBuf) -> Result<(), String> {
 
     // Unable to edit cooked asset
     // 95C3A55 : 32 DB -> B3 01
-    match file.seek(SeekFrom::Start(0x95C3A55)) {
-        Ok(_) => {},
-        Err(e) => {
-            return Err(e.to_string());
-        }
-    }
-    match file.write_all(&[0xB3, 0x01]) {
+    match apply_patch(&mut file, 0x95C3A55, &[0xB3, 0x01]) {
         Ok(_) => {},
         Err(e) => {
             return Err(e.to_string());
@@ -173,13 +161,7 @@ pub fn patch_uefn(path: PathBuf) -> Result<(), String> {
 
     // Copy Objects
     // 9352C78 : 0F 85 52 01 00 00 -> 90 90 90 90 90 90
-    match file.seek(SeekFrom::Start(0x9352C78)) {
-        Ok(_) => {},
-        Err(e) => {
-            return Err(e.to_string());
-        }
-    }
-    match file.write_all(&[0x90, 0x90, 0x90, 0x90, 0x90, 0x90]) {
+    match apply_patch(&mut file, 0x9352C78, &[0x90, 0x90, 0x90, 0x90, 0x90, 0x90]) {
         Ok(_) => {},
         Err(e) => {
             return Err(e.to_string());
@@ -188,13 +170,7 @@ pub fn patch_uefn(path: PathBuf) -> Result<(), String> {
 
     // Package is cooked or missing editor data
     // 935339D : 74 -> EB
-    match file.seek(SeekFrom::Start(0x935339D)) {
-        Ok(_) => {},
-        Err(e) => {
-            return Err(e.to_string());
-        }
-    }
-    match file.write_all(&[0xEB]) {
+    match apply_patch(&mut file, 0x935339D, &[0xEB]) {
         Ok(_) => {},
         Err(e) => {
             return Err(e.to_string());
@@ -203,13 +179,7 @@ pub fn patch_uefn(path: PathBuf) -> Result<(), String> {
 
     // Fixed additive animations
     // ABBF943 : 74 -> 75
-    match file.seek(SeekFrom::Start(0xABBF943)) {
-        Ok(_) => {},
-        Err(e) => {
-            return Err(e.to_string());
-        }
-    }
-    match file.write_all(&[0x75]) {
+    match apply_patch(&mut file, 0xABBF943, &[0x75]) {
         Ok(_) => {},
         Err(e) => {
             return Err(e.to_string());
@@ -218,18 +188,47 @@ pub fn patch_uefn(path: PathBuf) -> Result<(), String> {
 
     // Commandline Args
     // C4E735C : 75 -> EB
-    match file.seek(SeekFrom::Start(0xC4E735C)) {
+    match apply_patch(&mut file, 0xC4E735C, &[0xEB]) {
         Ok(_) => {},
         Err(e) => {
             return Err(e.to_string());
         }
     }
-    match file.write_all(&[0xEB]) {
+
+    Ok(())
+}
+
+pub fn patch_for_server(path: &PathBuf) -> Result<(), String> {
+    let mut file = match std::fs::OpenOptions::new()
+        .read(true)
+        .write(true)
+        .open(path) {
+            Ok(c) => {
+                c
+            },
+            Err(e) => {
+                let e_str: String = e.to_string();
+                return Err(e_str);
+            }
+        };
+
+    const PATCHED_HEADLESS: &[u8] = &[
+        45, 0, 108, 0, 111, 0, 103, 0, 32, 0, 45, 0, 110, 0, 111, 0,
+        115, 0, 112, 0, 108, 0, 97, 0, 115, 0, 104, 0, 32, 0, 45, 0,
+        110, 0, 111, 0, 115, 0, 111, 0, 117, 0, 110, 0, 100, 0, 32, 0,
+        45, 0, 110, 0, 117, 0, 108, 0, 108, 0, 114, 0, 104, 0, 105, 0,
+        32, 0, 45, 0, 117, 0, 115, 0, 101, 0, 111, 0, 108, 0, 100, 0,
+        105, 0, 116, 0, 101, 0, 109, 0, 99, 0, 97, 0, 114, 0, 100, 0,
+        115, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0
+    ];
+
+    // Patch some args I think
+    match apply_patch(&mut file, 0xC23D69C, PATCHED_HEADLESS) {
         Ok(_) => {},
         Err(e) => {
             return Err(e.to_string());
         }
-    }
+    };
 
     Ok(())
 }
