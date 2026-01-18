@@ -6,7 +6,7 @@ use windows::Win32::System::Threading::{CREATE_NEW_PROCESS_GROUP, DETACHED_PROCE
 
 use crate::utils::*;
 
-use std::{io::{BufRead, BufReader}, os::windows::process::CommandExt, path::Path, process::{Child, Command, Stdio}, time};
+use std::{io::{BufRead, BufReader}, os::windows::process::CommandExt, path::Path, process::{Child, Command, Stdio}};
 
 #[tauri::command]
 fn validate_install(path: String) -> bool {

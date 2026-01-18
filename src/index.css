@@ -1,0 +1,11 @@
+#launch-buttons {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+}
+
+#settings-button {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+}
