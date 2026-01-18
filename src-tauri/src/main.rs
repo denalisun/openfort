@@ -189,6 +189,7 @@ fn launch_install(path: String, username: String, is_server: bool) {
             }
         };
 
+        // Injecting dlls at login point
         let fortnite_stdout = fortnite_process.stdout.take().expect("stdout missing");
         let fortnite_process_id = fortnite_process.id();
         std::thread::spawn(move || {
@@ -234,7 +235,13 @@ fn main() {
     // Pre-launch setup
     let appdata_folder = Path::new(std::env::var("LOCALAPPDATA").unwrap().as_str()).join(".openfort");
     if !appdata_folder.is_dir() {
-        let _ = std::fs::create_dir(appdata_folder);
+        // let _ = std::fs::create_dir(appdata_folder);
+        match std::fs::create_dir(appdata_folder) {
+            Ok(_) => {},
+            Err(e) => {
+                println!("Err creating appdata folder: {}", e.to_string());
+            }
+        }
     }
 
     // TODO: Check for args

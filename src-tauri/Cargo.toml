@@ -1,5 +1,5 @@
 [package]
-name = "OpenFort"
+name = "openfort-launcher"
 version = "0.1.0"
 description = "Fortnite 27.11 Launcher"
 authors = ["you"]
