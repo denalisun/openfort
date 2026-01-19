@@ -1,4 +1,4 @@
-use std::{ffi::CString, fs::File, io::{self, BufRead, BufReader, Seek, SeekFrom, Write}, os::raw::c_void, path::PathBuf, process::Child, ptr::null_mut};
+use std::{ffi::CString, fs::File, io::{self, Seek, SeekFrom, Write}, os::raw::c_void, path::PathBuf, ptr::null_mut};
 
 use windows::{Win32::{Foundation::{CloseHandle, HANDLE}, System::{Diagnostics::Debug::WriteProcessMemory, LibraryLoader::{GetModuleHandleA, GetProcAddress}, Memory::{MEM_COMMIT, MEM_RELEASE, MEM_RESERVE, PAGE_READWRITE, VirtualAllocEx, VirtualFreeEx}, Threading::{LPTHREAD_START_ROUTINE, OpenProcess, PROCESS_ALL_ACCESS, PROCESS_QUERY_INFORMATION, PROCESS_SUSPEND_RESUME}}}, core::PCSTR};
 
