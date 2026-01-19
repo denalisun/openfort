@@ -2,9 +2,11 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod utils;
-use windows::Win32::System::Threading::{CREATE_NEW_PROCESS_GROUP, DETACHED_PROCESS};
+mod data;
 
+use windows::Win32::System::Threading::{CREATE_NEW_PROCESS_GROUP, DETACHED_PROCESS};
 use crate::utils::*;
+use crate::data::*;
 
 use std::{io::{BufRead, BufReader}, os::windows::process::CommandExt, path::Path, process::{Child, Command, Stdio}};
 
@@ -244,8 +246,10 @@ fn main() {
         }
     }
 
+    let settings: AppSettings = AppSettings::new("", "", "");
+
     // TODO: Check for args
-    // example: --username=EFortRarity --path="C:\\OpenFortBuilds
+    // example: --username=EFortRarity --path="C:\\OpenFortBuild
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
