@@ -13,7 +13,7 @@ impl AppSettings {
     }
 
     pub fn read_settings(&mut self) -> Result<(), String> {
-                
+        
 
         Ok(())
     }
