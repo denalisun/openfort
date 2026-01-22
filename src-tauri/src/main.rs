@@ -4,6 +4,7 @@
 mod utils;
 mod data;
 
+use serde_json::Value;
 use windows::Win32::System::Threading::{CREATE_NEW_PROCESS_GROUP, DETACHED_PROCESS};
 use crate::utils::*;
 use crate::data::*;
@@ -111,12 +112,16 @@ fn launch_editor(path: String) {
 }
 
 #[tauri::command]
-fn launch_install(path: String, username: String, is_server: bool) {
+fn launch_install(is_server: bool) {
+    let settings = serde_json::from_value::<AppSettings>(read_settings().unwrap()).unwrap();
+    println!("settings: {}", settings.fortnite_path);
+    
     std::thread::spawn(move || {
-        let args = format!("-epicapp=Fortnite -epicenv=Prod -epiclocale=en-us -epicportal -skippatchcheck -NOSSLPINNING -nobe -fromfl=eac -fltoken=3db3ba5dcbd2e16703f3978d -caldera=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50X2lkIjoiYmU5ZGE1YzJmYmVhNDQwN2IyZjQwZWJhYWQ4NTlhZDQiLCJnZW5lcmF0ZWQiOjE2Mzg3MTcyNzgsImNhbGRlcmFHdWlkIjoiMzgxMGI4NjMtMmE2NS00NDU3LTliNTgtNGRhYjNiNDgyYTg2IiwiYWNQcm92aWRlciI6IkVhc3lBbnRpQ2hlYXQiLCJub3RlcyI6IiIsImZhbGxiYWNrIjpmYWxzZX0.VAWQB67RTxhiWOxx7DBjnzDnXyyEnX7OljJm-j2d88G_WgwQ9wrE6lwMEHZHjBd1ISJdUO1UVUqkfLdU5nofBQ -AUTH_LOGIN={}@. -AUTH_PASSWORD=somethingmoreappropriate -AUTH_TYPE=epic", if username != "" { username } else { "UnknownLooper".to_string() });
+        let used_username: String = if is_server { "serverhost".to_string() } else { if settings.username != "" { settings.username } else { "UnknownLooper".to_string() } };
+        let args = format!("-epicapp=Fortnite -epicenv=Prod -epiclocale=en-us -epicportal -skippatchcheck -NOSSLPINNING -nobe -fromfl=eac -fltoken=3db3ba5dcbd2e16703f3978d -caldera=eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50X2lkIjoiYmU5ZGE1YzJmYmVhNDQwN2IyZjQwZWJhYWQ4NTlhZDQiLCJnZW5lcmF0ZWQiOjE2Mzg3MTcyNzgsImNhbGRlcmFHdWlkIjoiMzgxMGI4NjMtMmE2NS00NDU3LTliNTgtNGRhYjNiNDgyYTg2IiwiYWNQcm92aWRlciI6IkVhc3lBbnRpQ2hlYXQiLCJub3RlcyI6IiIsImZhbGxiYWNrIjpmYWxzZX0.VAWQB67RTxhiWOxx7DBjnzDnXyyEnX7OljJm-j2d88G_WgwQ9wrE6lwMEHZHjBd1ISJdUO1UVUqkfLdU5nofBQ -AUTH_LOGIN={}@. -AUTH_PASSWORD=somethingmoreappropriate -AUTH_TYPE=epic", used_username);
         let mut launch_args: Vec<&str> = args.split_whitespace().collect();
 
-        let fortnite_binaries = Path::new(path.as_str()).join("FortniteGame\\Binaries\\Win64");
+        let fortnite_binaries = Path::new(settings.fortnite_path.as_str()).join("FortniteGame\\Binaries\\Win64");
         let fortnite_launcher_path = fortnite_binaries.clone().as_path().join("FortniteLauncher.exe");
         let fortnite_eac_path = fortnite_binaries.clone().as_path().join("FortniteClient-Win64-Shipping_EAC.exe");
         let fortnite_client_path = fortnite_binaries.clone().as_path().join("FortniteClient-Win64-Shipping.exe");
@@ -233,6 +238,37 @@ fn launch_install(path: String, username: String, is_server: bool) {
     });
 }
 
+#[tauri::command]
+fn change_settings(username: String, fortnite_path: String) {
+    let settings_file = Path::new(&(std::env::var("LOCALAPPDATA").unwrap())).join(".openfort\\settings.json");
+    if settings_file.is_file() {
+        let contents = std::fs::read_to_string(settings_file.clone()).expect("Cannot read settings file");
+        let mut settings: AppSettings = serde_json::from_str::<AppSettings>(contents.as_str()).unwrap();
+
+        settings.username = username;
+        settings.fortnite_path = fortnite_path;
+
+        let serialized = serde_json::to_string(&settings).unwrap();
+        std::fs::write(settings_file, serialized).expect("Failed to write to settings file");
+    } else {
+        let settings: AppSettings = AppSettings::new(fortnite_path.as_str(), username.as_str(), "");
+        let serialized = serde_json::to_string(&settings).unwrap();
+        std::fs::write(settings_file, serialized).expect("Failed to write to settings file");
+    }
+}
+
+#[tauri::command]
+fn read_settings() -> Result<Value, String> {
+    let settings_file = Path::new(&(std::env::var("LOCALAPPDATA").unwrap())).join(".openfort\\settings.json");
+    let str = std::fs::read_to_string(settings_file)
+        .map_err(|e| e.to_string()).unwrap();
+
+    let json = serde_json::from_str(str.as_str())
+        .map_err(|e| e.to_string()).unwrap();
+
+    Ok(json)
+}
+
 fn main() {
     // Pre-launch setup
     let appdata_folder = Path::new(std::env::var("LOCALAPPDATA").unwrap().as_str()).join(".openfort");
@@ -246,8 +282,6 @@ fn main() {
         }
     }
 
-    let settings: AppSettings = AppSettings::new("", "", "");
-
     // TODO: Check for args
     // example: --username=EFortRarity --path="C:\\OpenFortBuild
 
@@ -255,7 +289,9 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             validate_install,
             launch_editor,
-            launch_install
+            launch_install,
+            change_settings,
+            read_settings
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
