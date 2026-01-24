@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/tauri";
+import * as utils from "./utils"
 
 let fortnitePathInput: HTMLInputElement;
 let usernameInput: HTMLInputElement;
@@ -8,24 +9,13 @@ async function change_settings(username: string, fortnitePath: string) {
     await invoke("change_settings", { username, fortnitePath });
 }
 
-interface AppSettings {
-    fortnite_path: string,
-    username: string,
-    extra_launch_args: string,
-};
-
-async function read_settings() {
-    const data = await invoke("read_settings", {});
-    return data;
-}
-
 document.addEventListener("DOMContentLoaded", () => {
     fortnitePathInput = document.querySelector("#fortnite-path-input") as HTMLInputElement;
     usernameInput = document.querySelector("#username-input") as HTMLInputElement;
     applyButton = document.querySelector("#apply-settings-button") as HTMLButtonElement;
 
-    read_settings().then((data) => { 
-        let dt = data as AppSettings;
+    utils.read_settings().then((data) => { 
+        let dt = data as utils.AppSettings;
         fortnitePathInput.value = dt.fortnite_path;
         usernameInput.value = dt.username;
     });
