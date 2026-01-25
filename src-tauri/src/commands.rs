@@ -274,8 +274,14 @@ pub fn change_settings(username: String, fortnite_path: String) {
 #[tauri::command]
 pub fn read_settings() -> Result<Value, String> {
     let settings_file = Path::new(&(std::env::var("LOCALAPPDATA").unwrap())).join(".openfort\\settings.json");
-    let str = std::fs::read_to_string(settings_file)
-        .map_err(|e| e.to_string()).unwrap();
+    let str = match std::fs::read_to_string(settings_file) {
+        Ok(s) => {
+            s
+        },
+        Err(e) => {
+            return Err(e.to_string());
+        }
+    };
 
     let json = serde_json::from_str(str.as_str())
         .map_err(|e| e.to_string()).unwrap();

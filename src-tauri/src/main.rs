@@ -7,20 +7,38 @@ mod commands;
 mod utils;
 mod data;
 
-use crate::commands::*;
+use crate::{commands::*, data::AppSettings};
 
 fn main() {
     // Pre-launch setup
     let appdata_folder = Path::new(std::env::var("LOCALAPPDATA").unwrap().as_str()).join(".openfort");
     if !appdata_folder.is_dir() {
         // let _ = std::fs::create_dir(appdata_folder);
-        match std::fs::create_dir(appdata_folder) {
+        match std::fs::create_dir(appdata_folder.clone()) {
             Ok(_) => {},
             Err(e) => {
-                println!("Err creating appdata folder: {}", e.to_string());
+                panic!("Err creating appdata folder: {}", e.to_string());
             }
         }
     }
+
+    match std::fs::exists(appdata_folder.join("settings.json")) {
+        Ok(b) => {
+            if !b {
+                let base_settings: AppSettings = AppSettings::new("", "", "");
+                let settings_json = serde_json::to_string(&base_settings).unwrap();
+                match std::fs::write(appdata_folder.join("settings.json"), settings_json) {
+                    Ok(_) => {},
+                    Err(e) => {
+                        panic!("{}", e.to_string());
+                    }
+                };
+            }
+        },
+        Err(_) => {
+
+        }
+    };
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
