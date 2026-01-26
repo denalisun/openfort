@@ -1,10 +1,8 @@
 import { invoke } from "@tauri-apps/api/tauri";
-import * as utils from "./utils"
 
 let launchButton: HTMLButtonElement;
 let launchEditorButton: HTMLButtonElement;
 let launchServerButton: HTMLButtonElement;
-let fortnitePathInput: HTMLInputElement;
 
 async function launch_game(is_server: boolean) {
     await invoke("launch_install", { isServer: is_server });
@@ -25,7 +23,6 @@ window.addEventListener("DOMContentLoaded", () => {
     launchButton = document.querySelector("#launch-button") as HTMLButtonElement;
     launchServerButton = document.querySelector("#launch-server-button") as HTMLButtonElement;
     launchEditorButton = document.querySelector("#launch-editor-button") as HTMLButtonElement;
-    fortnitePathInput = document.querySelector("#fortnite-path-input") as HTMLInputElement;
 
     // Getting settings
     does_build_have_uefn().then((data) => {

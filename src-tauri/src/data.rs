@@ -19,6 +19,7 @@ impl AppSettings {
     }
 }
 
+#[allow(dead_code)]
 pub struct FortniteInstall {
     pub has_uefn: bool,
     pub has_battleye: bool,
@@ -26,6 +27,7 @@ pub struct FortniteInstall {
     pub has_launcher: bool,
 }
 
+#[allow(dead_code)]
 impl FortniteInstall {
     pub fn default() -> Self {
         Self {

@@ -30,13 +30,13 @@ fn main() {
                 match std::fs::write(appdata_folder.join("settings.json"), settings_json) {
                     Ok(_) => {},
                     Err(e) => {
-                        panic!("{}", e.to_string());
+                        panic!("Err creating settings JSON: {}", e.to_string());
                     }
                 };
             }
         },
-        Err(_) => {
-
+        Err(e) => {
+            panic!("Err finding settings JSON: {}", e.to_string());
         }
     };
 
